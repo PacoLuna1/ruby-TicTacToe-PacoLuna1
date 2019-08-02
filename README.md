@@ -1,4 +1,4 @@
-# ruby-TicTacToe-PacoLuna1# 1 Tic Tac Toe
+# 1 Tic Tac Toe
 
 ## Objective
 
