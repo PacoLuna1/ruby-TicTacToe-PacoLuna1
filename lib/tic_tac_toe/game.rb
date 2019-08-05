@@ -1,149 +1,153 @@
 # frozen_string_literal: true
-# A Tic Tac Toe Game
+
 module TicTacToe
-class Game
+  # A Tic Tac Toe Game
+  class Game
+    def initialize(size, cross, zero)
+      @size = size
+      @cross = cross
+      @zero = zero
+      @matrix = Array.new(@size) { Array.new(@size) }
+      @position = 0
+      @last = size - 1
+    end
 
-  def initialize(size,cross, zero)
-    @size = size
-    @cross = cross
-    @zero = zero
-    @matrix = Array.new(@size) { Array.new(@size) }
-    @position = 0
-    @last = @size - 1
-  end
-  
-  def reset_matrix
-    @position = 0
-    @matrix.each_with_index do |vector, row|
-      vector.each_with_index do |_value, column|
-        @matrix[row][column] = "P #{row},#{column}"
-        column + 1
-      end
-      row += 1
-    end
-  end
-  
-  def show_matrix
-    @matrix.each_with_index do |vector, row|
-      vector.each_with_index do |_value, column|
-        if column == @size - 1
-          print "#{@matrix[row][column]} \n"
-        else
-          print " #{@matrix[row][column]} |"
+    def reset_matrix
+      @position = 0
+      @matrix.each_with_index do |vector, row|
+        vector.each_with_index do |_value, column|
+          @matrix[row][column] = "P #{row},#{column}"
+          column + 1
         end
-        column + 1
+        row += 1
       end
-      row += 1
     end
-  end
-  
-  def update_matrix(position_row, position_column)
-    # if @position == @size * @size
-    #   draw
-    # else
-      @size * @size.times do
-        @position += 1
+
+    def show_matrix
+      @matrix.each_with_index do |vector, row|
+        vector.each_with_index do |_value, column|
+          matrix = @matrix[row][column]
+          print column == @size - 1 ? "#{matrix} \n" : " #{matrix} |"
+          column + 1
+        end
+        row += 1
+      end
+    end
+
+    def update_matrix(position_row, position_column)
+      (@size * @size).times do
         @matrix[position_row][position_column] = if @position.even?
-                                                    @cross 
+                                                   @cross
                                                  else
-                                                    @zero
+                                                   @zero
                                                  end
-        track_matrix                        
       end
+      track_conditions
       show_matrix
-    # end
-  end
-  
-  
-  def track_matrix
-    down_diagonal_o = 0
-    down_diagonal_x = 0 # modify this section
-    up_diagonal_x = 0
-    up_diagonal_o = 0
-    @matrix.each_with_index do |vector, row|
-      horizontal_x = 0
-      horizontal_o = 0
-      vertical_o = 0
-      vertical_x = 0
-      vector.each_with_index do |value, column|
-        case
-        when value ==  @cross 
-          horizontal_x = horizontal_pointer(value, horizontal_x)
-          if column == row
-            down_diagonal_x = down_diagonal_pointer(value, down_diagonal_x)
-          end
-        when value == @zero
-          horizontal_o = horizontal_pointer(value, horizontal_o)
-          if column == row
-            down_diagonal_o = down_diagonal_pointer(value, down_diagonal_o)
-          end
-        when @matrix[column][row] ==  @cross 
-          vertical_x = vertical_pointer(@cross, vertical_x)
-        when @matrix[column][row] == @zero
-          vertical_o = vertical_pointer(@zero, vertical_o)
-        when @matrix[row][@last] == @cross  && column == 1
-          up_diagonal_x = up_diagonal_pointer( @cross , up_diagonal_x)
-        when @matrix[row][@last] == @zero && column == 1
-          up_diagonal_o = up_diagonal_pointer(@zero, up_diagonal_o)
-        end
-        column + 1
-      end
-      @last -= 1
-      row += 1
+      @position += 1
     end
-    @last = @size - 1
-  end
-  
-  def horizontal_pointer(value, horizontal)
-    winner(value) if horizontal == @size - 1
-    puts "#{horizontal} horizontal"
-    horizontal + 1
-  end
-  
-  def down_diagonal_pointer(value, down_diagonal)
-    winner(value) if down_diagonal == @size - 1
-    puts "#{down_diagonal} down diagonal"
-    down_diagonal + 1
-  end
-  
-  def vertical_pointer(value, vertical)
-    winner(value) if vertical == @size - 1 
-    puts "#{vertical} vertical"
-    vertical + 1
-  end
-  
-  def up_diagonal_pointer(value, up_diagonal)
-    winner(value) if up_diagonal == @size - 1
-    puts "#{up_diagonal} up diagonal"
-    up_diagonal + 1
-  end
-  
-  def winner(value)
-    puts "Winner#{value}"
-    puts 'Do you want to play again? (1) Yes (2) No'
-    answer = gets.chomp.to_i
-    play_again?(answer)
-  end
-  
-  def draw()
-    puts "It's a draw"
-    puts 'Do you want to play again? (1) Yes (2) No'
-    answer = gets.chomp.to_i
-    play_again?(answer)
-  end
 
-  def play_again?(answer)
-    if answer == 1  
-      reset_matrix 
-    elsif answer == 2 
-      game_over
+    def track_conditions
+      up_diagonal_conditions
+      down_diagonal_conditions
+      vertical_conditions
+      horizontal_conditions
+      draw if @position == (@size * @size)
     end
-    answer  
+
+    def up_diagonal_conditions
+      up_diagonal_x = up_diagonal_o = 0
+      @matrix.each_with_index do |vector, row|
+        vector.each_with_index do |_value, column|
+          if @matrix[row][@last] == @cross && column == 1
+            winner(@cross) if up_diagonal_x == @size - 1
+            up_diagonal_x += 1
+          elsif @matrix[row][@last] == @zero && column == 1
+            winner(@zero) if up_diagonal_o == @size - 1
+            up_diagonal_o += 1
+          end
+          column + 1
+        end
+        @last -= 1
+        row += 1
+      end
+      @last = @size - 1
+    end
+
+    def horizontal_conditions
+      @matrix.each do |vector|
+        horizontal_x = horizontal_o = 0
+        vector.each do |value|
+          if value == @cross
+            winner(value) if horizontal_x == @size - 1
+            horizontal_x += 1
+          elsif value == @zero
+            winner(value) if horizontal_o == @size - 1
+            horizontal_o += 1
+          end
+        end
+      end
+    end
+
+    def down_diagonal_conditions
+      down_diagonal_o = down_diagonal_x = 0
+      @matrix.each_with_index do |vector, row|
+        vector.each_with_index do |value, column|
+          if value == @cross && column == row
+            winner(value) if down_diagonal_x == @size - 1
+            down_diagonal_x += 1
+          elsif value == @zero && column == row
+            winner(value) if down_diagonal_o == @size - 1
+            down_diagonal_o += 1
+          end
+          column + 1
+        end
+        row + 1
+      end
+    end
+
+    def vertical_conditions
+      @matrix.each_with_index do |vector, row|
+        vertical_o = vertical_x = 0
+        vector.each_with_index do |_value, column|
+          if @matrix[column][row] == @cross
+            winner(@cross) if vertical_x == @size - 1
+            vertical_x += 1
+          elsif @matrix[column][row] == @zero
+            winner(@zero) if vertical_o == @size - 1
+            vertical_o += 1
+          end
+          column + 1
+        end
+        row + 1
+      end
+    end
+
+    def winner(value)
+      puts "Winner#{value}"
+      puts 'Do you want to play again? (1) Yes (2) No'
+      answer = gets.chomp.to_i
+      play_again?(answer)
+    end
+
+    def draw
+      puts "It's a draw"
+      puts 'Do you want to play again? (1) Yes (2) No'
+      answer = gets.chomp.to_i
+      play_again?(answer)
+    end
+
+    def play_again?(answer)
+      if answer == 1
+        reset_matrix
+      elsif answer == 2
+        game_over
+      end
+      answer
+    end
+
+    def game_over
+      exit
+    end
   end
-  
-  def game_over
-    exit
-  end
-  
-end
 end
