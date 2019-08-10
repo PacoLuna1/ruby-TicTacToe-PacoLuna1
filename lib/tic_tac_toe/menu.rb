@@ -3,8 +3,9 @@
 module TicTacToe
   # Menu for the game
   class Menu
-    def initialize(game)
+    def initialize(game, board)
       @game = game
+      @board = board
     end
 
     def print_menu
@@ -22,7 +23,7 @@ module TicTacToe
         position_row = gets.chomp.to_i
         puts 'Introduce a column:'
         position_column = gets.chomp.to_i
-        @game.update_matrix(position_row, position_column)
+        @board.update_matrix(position_row, position_column)
       else
         @game.game_over if option == 2
         puts "Error you didn't choose a correct option"
